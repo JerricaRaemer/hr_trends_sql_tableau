@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="C:/Users/jraem/Desktop/Portfolio/Employee_Relational_Database/Employee_Relations_DB.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="1902"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="employee_relations_cases" custom_title="0" dock_id="1" table="4,24:mainemployee_relations_cases"/><dock_state state="000000ff00000000fd0000000100000002000005bb0000038ffc0100000001fb000000160064006f0063006b00420072006f00770073006500310100000000000005bb0000011e00ffffff0000027a0000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="case_assignments" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="91"/><column index="2" value="53"/><column index="3" value="96"/><column index="4" value="91"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="employee_tenure*">-- CTE: Join employee and case data, calculate tenure in days
+WITH case_tenure AS (
+    SELECT
+        c.case_id,
+        c.ee_id,
+        e.first_name,
+        e.last_name,
+        e.department,
+        e.hire_date,
+        c.case_type,
+        c.opened,
+        DATEDIFF(DAY, CAST(e.hire_date AS DATE), CAST(c.opened AS DATE)) AS tenure_days
+    FROM employee_relations_cases c
+    JOIN employees e ON c.ee_id = e.employee_id
+)
+SELECT *
+FROM case_tenure
+ORDER BY tenure_days;</sql><sql name="cases_by_tenure*">-- Add tenure bucket categorization
+WITH case_tenure AS (
+    SELECT
+        c.case_id,
+        c.ee_id,
+        e.first_name,
+        e.last_name,
+        e.department,
+        e.hire_date,
+        c.case_type,
+        c.opened,
+        DATEDIFF(DAY, CAST(e.hire_date AS DATE), CAST(c.opened AS DATE)) AS tenure_days
+    FROM employee_relations_cases c
+    JOIN employees e ON c.ee_id = e.employee_id
+),
+bucketed_cases AS (
+    SELECT *,
+        CASE 
+            WHEN tenure_days &lt; 365 THEN '&lt; 1 year'
+            WHEN tenure_days BETWEEN 365 AND 1095 THEN '1-3 years'
+            ELSE '&gt; 3 years'
+        END AS tenure_bucket
+    FROM case_tenure
+)
+SELECT
+    tenure_bucket,
+    COUNT(*) AS total_cases,
+    COUNT(DISTINCT ee_id) AS unique_employees,
+    COUNT(*) * 1.0 / COUNT(DISTINCT ee_id) AS avg_cases_per_employee
+FROM bucketed_cases
+GROUP BY tenure_bucket
+ORDER BY tenure_bucket;</sql><sql name="employee_cases" filename="C:/Users/jraem/Desktop/Portfolio/Employee_Relational_Database/Employee_Cases.sql">-- Reference to file &quot;C:/Users/jraem/Desktop/Portfolio/Employee_Relational_Database/Employee_Cases.sql&quot; (not supported by this version) --</sql><current_tab id="2"/></tab_sql></sqlb_project>
