@@ -37,11 +37,6 @@
 #### 4. Case Type Breakdown
 > Analyzed the distribution of case types (e.g. harassment, performance, conflict) across each tenure group
 
-## Tableau Visualizations
-> Bar chart: Total cases by tenure bucket
->
-> Stacked bar chart: Case types per tenure group
-
 ## Insights
 > A higher proportion of **conflict** cases occur in the `1–3 years` range
 > 
